@@ -2,6 +2,9 @@
 # CrossMix-OS SE/CE - hotfix v1.4.0-ce.2.20
 # Channel: served by ota_update.sh when releases/latest has nothing newer.
 # Fixes:
+#  - idle floor: the scene loop MainUI keeps running corrects only the stock
+#    stamp (min 1200000 / max 2000000). A one-shot loses because MainUI writes
+#    that stamp after the menu finishes loading, later than any boot hook
 #  - post_starts: full PATH - it only added the card bin dir, so setsid (in
 #    /usr/bin) and the tools ex_config needs were invisible to both hooks
 #  - cpufreq-profile: hooked from °post_starts.sh, the only boot script that
@@ -39,7 +42,7 @@
 source /mnt/SDCARD/System/usr/trimui/scripts/update_common.sh
 cmd=$1
 
-Remote_HotfixVersion="1.4.0-ce.2.30"
+Remote_HotfixVersion="1.4.0-ce.2.31"
 Remote_HotfixDate="2026-10-19"
 Remote_HotfixDesc="- The boot logo flashed on first boot is now the SE mark, with a fallback to the stock one on cards that lack it; splash already shows CrossMix-OS SE"
 
@@ -106,6 +109,8 @@ main() {
     chmod a+x "/mnt/SDCARD/System/usr/trimui/scripts/install-ssh-autostart.sh" 2>/dev/null
     chmod a+x "/mnt/SDCARD/System/usr/trimui/scripts/cpufreq-profile.sh" 2>/dev/null
     chmod a+x "/mnt/SDCARD/System/usr/trimui/scripts/install-cpufreq-profile.sh" 2>/dev/null
+    chmod a+x "/mnt/SDCARD/System/usr/trimui/scripts/cpuperformance-se.sh" 2>/dev/null
+    chmod a+x "/mnt/SDCARD/System/usr/trimui/scripts/install-cpufreq-floor.sh" 2>/dev/null
 
 # SSH on every boot: rc.local is the only init hook this firmware runs reliably.
 # ex_init.sh and °customization.sh are not executed, so the helper never ran.
@@ -119,6 +124,11 @@ if [ -x "/mnt/SDCARD/System/usr/trimui/scripts/install-cpufreq-profile.sh" ]; th
 fi
 if [ -x "/mnt/SDCARD/System/usr/trimui/scripts/cpufreq-profile.sh" ]; then
     /mnt/SDCARD/System/usr/trimui/scripts/cpufreq-profile.sh
+fi
+
+# Idle floor lives in the scene loop MainUI already runs. Install it now.
+if [ -x "/mnt/SDCARD/System/usr/trimui/scripts/install-cpufreq-floor.sh" ]; then
+    /mnt/SDCARD/System/usr/trimui/scripts/install-cpufreq-floor.sh
 fi
 
     # retire obsolete debug/download-only entries; keep Firmware Update.sh
