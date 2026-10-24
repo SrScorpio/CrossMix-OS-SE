@@ -29,9 +29,8 @@ fi
 
 /mnt/SDCARD/System/bin/ex_update.sh
 
-# dropbear lives in its own helper: it is also called from °customization.sh
-# because the firmware does not always run ex_init on a real boot.
-/mnt/SDCARD/System/usr/trimui/scripts/ssh_start.sh
+# SSH is not started here. The menu toggle is the switch; an autostart helper
+# from this script pkill's that server.
 
 if [[ "$NETWORK_SFTPGO" == "Y" ]]; then
     mkdir -p /opt/sftpgo
