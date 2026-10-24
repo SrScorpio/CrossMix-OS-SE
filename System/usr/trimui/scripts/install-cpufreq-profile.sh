@@ -11,7 +11,7 @@
 RC="/etc/rc.local"
 SRC="/mnt/SDCARD/System/usr/trimui/scripts/cpufreq-profile.sh"
 DST="/etc/cpufreq-profile.sh"
-HOOK="/bin/sh $DST >/dev/null 2>&1"
+HOOK="/bin/sh $DST --after-mainui >/dev/null 2>&1 &"
 
 [ -f "$SRC" ] || exit 0
 

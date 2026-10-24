@@ -12,6 +12,23 @@
 
 export PATH="/mnt/SDCARD/System/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
+# MainUI applies its own profile (1.2 GHz floor) when it starts, and it starts
+# after rc.local, so writing before it is pointless - measured: the floor came
+# back to 1.2 GHz on every boot. Wait for the frontend to be up, give it a moment
+# to settle, and only then write. Written once, not in a loop, so a profile the
+# user picks afterwards is never fought over.
+if [ "$1" = "--after-mainui" ]; then
+	i=0
+	while [ $i -lt 240 ]; do
+		if pidof MainUI >/dev/null 2>&1; then
+			sleep 3
+			break
+		fi
+		sleep 0.5
+		i=$((i + 1))
+	done
+fi
+
 GOV="ondemand"
 MIN_FREQ=408000
 MAX_FREQ=2000000
