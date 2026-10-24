@@ -142,10 +142,8 @@ if [ "$TELNET_enabled" -eq 1 ]; then
 	echo "telnetd: disabled (unauthenticated remote root)" >&2
 fi
 
-# SSH: this is the script that brings network services up on every boot, so it is
-# the most reliable place to start dropbear. Idempotent (lock + pidof check), so
-# it does not matter that °customization.sh may also call it.
-[ -x /mnt/SDCARD/System/usr/trimui/scripts/ssh_start.sh ] && /mnt/SDCARD/System/usr/trimui/scripts/ssh_start.sh >/dev/null 2>&1 &
+# SSH stays off until the menu toggle. ssh_start.sh used to run here and would
+# pkill the menu's dropbear -R, which drops the session. Do not call it.
 
 if [ "$Syncthing_enabled" -eq 1 ]; then
 	CONFIGPATH=/mnt/SDCARD/System/etc/syncthing

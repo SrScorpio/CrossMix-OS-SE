@@ -242,6 +242,4 @@ echo "root:tina" | chpasswd
 
 hostname "TSP"
 
-# SSH on every boot, not only on a first boot: the menu's toggle does not always
-# survive a reboot and ex_init is not guaranteed to run.
-[ -x /mnt/SDCARD/System/usr/trimui/scripts/ssh_start.sh ] && /mnt/SDCARD/System/usr/trimui/scripts/ssh_start.sh
+# SSH is not started at boot. The menu toggle is the switch.

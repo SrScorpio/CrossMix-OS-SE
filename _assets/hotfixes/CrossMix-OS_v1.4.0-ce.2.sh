@@ -2,6 +2,8 @@
 # CrossMix-OS SE/CE - hotfix v1.4.0-ce.2.20
 # Channel: served by ota_update.sh when releases/latest has nothing newer.
 # Fixes:
+#  - ssh: do not start it at boot. The menu toggle is the switch. The old helper
+#    pkill'd dropbear -R and dropped the session
 #  - idle floor: the scene loop MainUI keeps running corrects only the stock
 #    stamp (min 1200000 / max 2000000). A one-shot loses because MainUI writes
 #    that stamp after the menu finishes loading, later than any boot hook
@@ -42,7 +44,7 @@
 source /mnt/SDCARD/System/usr/trimui/scripts/update_common.sh
 cmd=$1
 
-Remote_HotfixVersion="1.4.0-ce.2.31"
+Remote_HotfixVersion="1.4.0-ce.2.32"
 Remote_HotfixDate="2026-10-19"
 Remote_HotfixDesc="- The boot logo flashed on first boot is now the SE mark, with a fallback to the stock one on cards that lack it; splash already shows CrossMix-OS SE"
 
