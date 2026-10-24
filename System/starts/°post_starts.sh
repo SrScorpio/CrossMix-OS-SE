@@ -7,12 +7,12 @@ export LD_LIBRARY_PATH="/mnt/SDCARD/System/lib:/mnt/SDCARD/System/lib/samba:/mnt
 # CFQ on the SD card, which is the wrong scheduler for this workload.
 [ -x /mnt/SDCARD/System/usr/trimui/scripts/io_scheduler.sh ] && /mnt/SDCARD/System/usr/trimui/scripts/io_scheduler.sh >/dev/null 2>&1 &
 
-# Power profile. MainUI applies its own 1.2 GHz floor when it starts, and it
-# starts before this script - which is why rc.local (never executed at all) and
-# the fn_editor loop (only started when a game launches) both failed to make it
-# stick. This runs after the frontend, so writing here is the first moment it
-# survives. setsid so it does not die with this script.
-[ -x /mnt/SDCARD/System/usr/trimui/scripts/cpufreq-profile.sh ] && setsid /mnt/SDCARD/System/usr/trimui/scripts/cpufreq-profile.sh >/dev/null 2>&1 &
+# Idle floor. The scene loop MainUI starts (cwd /usr/trimui/scene, arg 0) is the
+# process that stays up for the whole menu session. A one-shot write loses: MainUI
+# stamps min=1200000 after the menu finishes loading, which is later than any boot
+# hook. The installer puts a script there that corrects only that stamp, every
+# pass, and restarts the loop if it is already running the stock one.
+[ -x /mnt/SDCARD/System/usr/trimui/scripts/install-cpufreq-floor.sh ] && /bin/sh /mnt/SDCARD/System/usr/trimui/scripts/install-cpufreq-floor.sh
 
 eval $(
 	/mnt/SDCARD/System/bin/jq -r '

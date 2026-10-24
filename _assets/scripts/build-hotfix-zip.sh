@@ -51,6 +51,8 @@ Apps/SystemTools/Menu/NETWORK##TELNET (state)/TELNET Server  - enable.sh
 System/usr/trimui/scripts/install-ssh-autostart.sh
 System/usr/trimui/scripts/cpufreq-profile.sh
 System/usr/trimui/scripts/install-cpufreq-profile.sh
+System/usr/trimui/scripts/cpuperformance-se.sh
+System/usr/trimui/scripts/install-cpufreq-floor.sh
 "
 
 missing=0
