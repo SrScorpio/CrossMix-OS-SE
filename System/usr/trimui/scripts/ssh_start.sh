@@ -10,12 +10,17 @@
 # server: it starts another dropbear on every call, and the one that ends up
 # owning port 22 is the firmware's, which accepts passwords.
 
+# PATH and libraries FIRST, before anything is sourced. ex_config calls cut, which
+# lives in /usr/bin; with the init PATH (/bin:/sbin) the source fails half way
+# through, NETWORK_SSH never gets defined, and this script exits doing nothing -
+# with no error anywhere. That is what kept the service "enabled" and silent.
+export PATH="/mnt/SDCARD/System/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+export LD_LIBRARY_PATH="/mnt/SDCARD/System/lib:/usr/trimui/lib:$LD_LIBRARY_PATH"
+
 [ -f /mnt/SDCARD/System/etc/ex_config ] && . /mnt/SDCARD/System/etc/ex_config
 
 # /etc/rc.local runs from S95done, which can get there before the card is
-# mounted: the helper is then unreadable and exits doing nothing, which is
-# exactly why the service looked enabled and never came up. The script lives in
-# /etc for that reason, and waits here for the config to appear.
+# mounted: the config is then unreadable. Wait for it instead of assuming.
 n=0
 while [ ! -r /mnt/SDCARD/System/etc/ex_config ] && [ "$n" -lt 60 ]; do
 	sleep 0.5
@@ -60,9 +65,6 @@ if [ -n "$PIDS" ]; then
 	pkill dropbear 2>/dev/null
 	sleep 1
 fi
-
-export PATH="/mnt/SDCARD/System/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-export LD_LIBRARY_PATH="/mnt/SDCARD/System/lib:/usr/trimui/lib:$LD_LIBRARY_PATH"
 
 KEYDIR="/etc/dropbear"
 [ -w /etc ] || KEYDIR="/tmp/dropbear"
