@@ -2,6 +2,8 @@
 # CrossMix-OS SE/CE - hotfix v1.4.0-ce.2.20
 # Channel: served by ota_update.sh when releases/latest has nothing newer.
 # Fixes:
+#  - cpufreq-profile: hooked from °post_starts.sh, the only boot script that
+#    runs after MainUI - rc.local is never executed by this firmware
 #  - cpufreq-profile: waits for MainUI before writing, because the frontend
 #    applies its own 1.2 GHz floor after rc.local
 #  - cpufreq-profile: idle floor 408 MHz instead of 1.2 GHz - ondemand still goes
@@ -35,7 +37,7 @@
 source /mnt/SDCARD/System/usr/trimui/scripts/update_common.sh
 cmd=$1
 
-Remote_HotfixVersion="1.4.0-ce.2.28"
+Remote_HotfixVersion="1.4.0-ce.2.29"
 Remote_HotfixDate="2026-10-19"
 Remote_HotfixDesc="- The boot logo flashed on first boot is now the SE mark, with a fallback to the stock one on cards that lack it; splash already shows CrossMix-OS SE"
 
