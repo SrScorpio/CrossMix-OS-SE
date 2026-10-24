@@ -31,7 +31,7 @@ if [ -x "$HELPER" ]; then
 	chmod +x /etc/ssh_start.sh 2>/dev/null
 fi
 
-grep -q "setsid /etc/ssh_start.sh" "$RC" && exit 0
+grep -q "/usr/bin/setsid /etc/ssh_start.sh" "$RC" && exit 0
 
 cp -f "$RC" "$RC.bak-se" 2>/dev/null
 
