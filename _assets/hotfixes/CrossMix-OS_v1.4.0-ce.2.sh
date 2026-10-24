@@ -2,6 +2,8 @@
 # CrossMix-OS SE/CE - hotfix v1.4.0-ce.2.20
 # Channel: served by ota_update.sh when releases/latest has nothing newer.
 # Fixes:
+#  - cpufreq-profile: idle floor 408 MHz instead of 1.2 GHz - ondemand still goes
+#    to 2 GHz on demand, but the console stops running warm doing nothing
 #  - ssh: the init PATH is /bin:/sbin only - setsid and dropbear are resolved by
 #    absolute path and the helper sets a full PATH itself
 #  - ssh: dropbear resolved by absolute path (it lives on the card, not in
@@ -31,7 +33,7 @@
 source /mnt/SDCARD/System/usr/trimui/scripts/update_common.sh
 cmd=$1
 
-Remote_HotfixVersion="1.4.0-ce.2.26"
+Remote_HotfixVersion="1.4.0-ce.2.27"
 Remote_HotfixDate="2026-10-19"
 Remote_HotfixDesc="- The boot logo flashed on first boot is now the SE mark, with a fallback to the stock one on cards that lack it; splash already shows CrossMix-OS SE"
 
@@ -96,11 +98,21 @@ main() {
     chmod a+x "/mnt/SDCARD/System/usr/trimui/scripts/io_scheduler.sh" 2>/dev/null
     chmod a+x "/mnt/SDCARD/Apps/SystemTools/Menu/NETWORK##TELNET (state)/TELNET Server  - enable.sh" 2>/dev/null
     chmod a+x "/mnt/SDCARD/System/usr/trimui/scripts/install-ssh-autostart.sh" 2>/dev/null
+    chmod a+x "/mnt/SDCARD/System/usr/trimui/scripts/cpufreq-profile.sh" 2>/dev/null
+    chmod a+x "/mnt/SDCARD/System/usr/trimui/scripts/install-cpufreq-profile.sh" 2>/dev/null
 
 # SSH on every boot: rc.local is the only init hook this firmware runs reliably.
 # ex_init.sh and °customization.sh are not executed, so the helper never ran.
 if [ -x "/mnt/SDCARD/System/usr/trimui/scripts/install-ssh-autostart.sh" ]; then
     /mnt/SDCARD/System/usr/trimui/scripts/install-ssh-autostart.sh
+fi
+
+# Power profile: install for next boot and apply right now.
+if [ -x "/mnt/SDCARD/System/usr/trimui/scripts/install-cpufreq-profile.sh" ]; then
+    /mnt/SDCARD/System/usr/trimui/scripts/install-cpufreq-profile.sh
+fi
+if [ -x "/mnt/SDCARD/System/usr/trimui/scripts/cpufreq-profile.sh" ]; then
+    /mnt/SDCARD/System/usr/trimui/scripts/cpufreq-profile.sh
 fi
 
     # retire obsolete debug/download-only entries; keep Firmware Update.sh
