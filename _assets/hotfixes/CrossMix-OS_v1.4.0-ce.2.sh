@@ -2,6 +2,8 @@
 # CrossMix-OS SE/CE - hotfix v1.4.0-ce.2.20
 # Channel: served by ota_update.sh when releases/latest has nothing newer.
 # Fixes:
+#  - post_starts: full PATH - it only added the card bin dir, so setsid (in
+#    /usr/bin) and the tools ex_config needs were invisible to both hooks
 #  - cpufreq-profile: hooked from °post_starts.sh, the only boot script that
 #    runs after MainUI - rc.local is never executed by this firmware
 #  - cpufreq-profile: waits for MainUI before writing, because the frontend
@@ -37,7 +39,7 @@
 source /mnt/SDCARD/System/usr/trimui/scripts/update_common.sh
 cmd=$1
 
-Remote_HotfixVersion="1.4.0-ce.2.29"
+Remote_HotfixVersion="1.4.0-ce.2.30"
 Remote_HotfixDate="2026-10-19"
 Remote_HotfixDesc="- The boot logo flashed on first boot is now the SE mark, with a fallback to the stock one on cards that lack it; splash already shows CrossMix-OS SE"
 

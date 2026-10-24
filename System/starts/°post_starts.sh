@@ -1,6 +1,6 @@
 #!/bin/sh
 
-PATH="/mnt/SDCARD/System/bin:$PATH"
+PATH="/mnt/SDCARD/System/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
 export LD_LIBRARY_PATH="/mnt/SDCARD/System/lib:/mnt/SDCARD/System/lib/samba:/mnt/SDCARD/Apps/PortMaster/PortMaster:/usr/trimui/lib:$LD_LIBRARY_PATH"
 
 # Storage latency first, before anything scans or writes: the kernel boots with
