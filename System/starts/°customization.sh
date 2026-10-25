@@ -234,9 +234,6 @@ if [ -f /mnt/SDCARD/Roms/favourite2.json ]; then
     fi
 fi
 
-# override empty password on firmware >= v1.1.1
-echo "root:tina" | chpasswd
-
 # Apply current led configuration
 /mnt/SDCARD/System/etc/led_config.sh &
 
