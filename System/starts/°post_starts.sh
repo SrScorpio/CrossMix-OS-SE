@@ -201,3 +201,10 @@ wifi_value=$(/usr/trimui/bin/systemval wifi)
 if [ "$wifi_value" -eq 1 ]; then
 	wifi_workaround &
 fi
+
+# Optional swap (issue #86). swap.sh is opt-in: it only acts when the user ran
+# it with `on`, which writes the persistence flag. In background so the boot
+# never waits on mkswap/swapon.
+if [ -f /mnt/SDCARD/System/updates/.swap_enabled ] && [ -x /mnt/SDCARD/System/usr/trimui/scripts/swap.sh ]; then
+	/mnt/SDCARD/System/usr/trimui/scripts/swap.sh on >/dev/null 2>&1 &
+fi
