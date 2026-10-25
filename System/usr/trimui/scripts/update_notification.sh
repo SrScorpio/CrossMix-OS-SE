@@ -35,7 +35,7 @@ has_ip() {
 }
 
 can_reach_github() {
-    wget -q --spider https://github.com >/dev/null 2>&1
+    ota_fetch -sI --connect-timeout 10 https://github.com >/dev/null 2>&1
 }
 
 write_result_json() {
@@ -49,7 +49,7 @@ write_result_json() {
 
 # Check major release availability from GitHub releases
 check_major_release() {
-    release_json=$(curl -k -s -L "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/latest")
+    release_json=$(ota_fetch -s -L "https://api.github.com/repos/$GITHUB_REPOSITORY/releases/latest")
     if echo "$release_json" | grep -q '"message": "Not Found"'; then
         log "No GitHub releases found."
         rm -f "$RELEASE_META"
@@ -138,12 +138,12 @@ check_hotfix() {
     base_version="$1"
     url="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main/_assets/hotfixes/CrossMix-OS_v${base_version}.sh"
 
-    if ! wget -q --spider "$url" >/dev/null 2>&1; then
+    if ! ota_fetch -sI --connect-timeout "${OTA_WGET_TIMEOUT:-30}" "$url" >/dev/null 2>&1; then
         rm -f "$HOTFIX_META"
         return 1
     fi
 
-    content=$(curl -k -s "$url") || {
+    content=$(ota_fetch -s "$url") || {
         rm -f "$HOTFIX_META"
         return 1
     }

@@ -70,13 +70,27 @@ report_failure() {
 	fi
 }
 
+# TLS helper comes from update_common.sh; define a local one when the SD copy
+# predates the CA bundle, so old cards fail closed instead of crashing oddly
+# on an unknown function (issue #30).
+if ! command -v ota_fetch >/dev/null 2>&1; then
+	OTA_CA_BUNDLE="/mnt/SDCARD/System/etc/ssl/ca-certificates.crt"
+	ota_fetch() {
+		if [ ! -f "$OTA_CA_BUNDLE" ]; then
+			echo "TLS: CA bundle missing; refusing unauthenticated download" >&2
+			return 60
+		fi
+		curl --cacert "$OTA_CA_BUNDLE" "$@"
+	}
+fi
+
 run_bootstrap() {
 	_bs=/tmp/ota_bootstrap.sh
 	rm -f "$_bs"
 
 	# Fetch first. `curl ... | sh` returns the exit status of the shell, so a
 	# failed download used to look like a successful bootstrap.
-	if ! curl -k -s -L --connect-timeout "${OTA_CURL_CONNECT_TIMEOUT:-15}" --max-time "${OTA_CURL_MAX_TIME:-900}" -o "$_bs" "$OTA_BOOTSTRAP_URL"; then
+	if ! ota_fetch -s -L --connect-timeout "${OTA_CURL_CONNECT_TIMEOUT:-15}" --max-time "${OTA_CURL_MAX_TIME:-900}" -o "$_bs" "$OTA_BOOTSTRAP_URL"; then
 		echo -e "${RED}Could not download the OTA bootstrap.${NC}"
 		return "$OTA_EXIT_DOWNLOAD"
 	fi
@@ -94,7 +108,7 @@ run_hotfix() {
 	[ -n "$_hf_ver" ] || _hf_ver=$(cat "/mnt/SDCARD/System/usr/trimui/crossmix-version.txt" 2>/dev/null)
 	_hf_url="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main/_assets/hotfixes/CrossMix-OS_v${_hf_ver}.sh"
 
-	if ! /mnt/SDCARD/System/bin/wget -q --spider -T "${OTA_WGET_TIMEOUT:-30}" -t 2 "$_hf_url"; then
+	if ! ota_fetch -sI --connect-timeout "${OTA_WGET_TIMEOUT:-30}" "$_hf_url" >/dev/null 2>&1; then
 		clear
 		echo -ne "${PURPLE}Retrieving hotfix information.. ${NC}"
 		echo -ne "${GREEN}DONE${NC}\n\n\n"
@@ -110,7 +124,7 @@ run_hotfix() {
 	# `curl ... | sh | tee` hid both the download and the hotfix status.
 	_hf_file=/tmp/ota_hotfix.sh
 	rm -f "$_hf_file"
-	if ! curl -k -s -L --connect-timeout "${OTA_CURL_CONNECT_TIMEOUT:-15}" --max-time "${OTA_CURL_MAX_TIME:-900}" -o "$_hf_file" "$_hf_url"; then
+	if ! ota_fetch -s -L --connect-timeout "${OTA_CURL_CONNECT_TIMEOUT:-15}" --max-time "${OTA_CURL_MAX_TIME:-900}" -o "$_hf_file" "$_hf_url"; then
 		report_failure "$OTA_EXIT_DOWNLOAD" "Could not download the CrossMix v$_hf_ver hotfix." "$updatedir/ota_hotfix.log"
 		return "$OTA_EXIT_DOWNLOAD"
 	fi

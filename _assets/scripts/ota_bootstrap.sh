@@ -9,12 +9,23 @@ export LD_LIBRARY_PATH="/mnt/SDCARD/System/lib:/usr/trimui/lib:$LD_LIBRARY_PATH"
 # Used before update_common.sh is sourced, so it cannot come from there.
 OTA_EXIT_DOWNLOAD=${OTA_EXIT_DOWNLOAD:-2}
 
+# TLS (issue #30): the first refresh also authenticates. Fail-closed, no -k
+# fallback: without the CA bundle the refresh fails and the update aborts.
+OTA_CA_BUNDLE="/mnt/SDCARD/System/etc/ssl/ca-certificates.crt"
+ota_fetch() {
+    if [ ! -f "$OTA_CA_BUNDLE" ]; then
+        echo "TLS: CA bundle missing ($OTA_CA_BUNDLE); refusing unauthenticated download" >&2
+        return 60
+    fi
+    curl --cacert "$OTA_CA_BUNDLE" "$@"
+}
+
 CommonUpdateScript="/mnt/SDCARD/System/usr/trimui/scripts/update_common.sh"
 currentUpdatePack=$("$CommonUpdateScript" -v)
 
 GITHUB_REPOSITORY=SrScorpio/CrossMix-OS-SE
 UpdatePackUrl="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/main/System/usr/trimui/scripts/update_common.sh"
-wget --no-check-certificate --quiet --show-progress -T 30 -t 2 -O "/tmp/update_common.sh" "$UpdatePackUrl"
+ota_fetch -# --connect-timeout 15 --speed-time 30 --speed-limit 1024 -o "/tmp/update_common.sh" "$UpdatePackUrl"
 chmod +x "/tmp/update_common.sh"
 onlineUpdatePack=$("/tmp/update_common.sh" -v)
 

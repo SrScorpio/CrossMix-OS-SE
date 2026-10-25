@@ -346,3 +346,27 @@ Run on real TG5040 hardware with controlled MITM (e.g. local reverse proxy with 
 | **Recommend** | Sign artifacts with embedded pubkey; kill `curl\|sh`; then enable TLS with SD CA bundle. |
 | **Do not** | Ship “HTTPS + md5 on same URL” as the fix. |
 | **Next** | Approve design → hardware TLS/crypto probes → Phase 1 soft-verify hotfix. |
+
+---
+
+## 11. Implementation (hardware evidence, 2026-10-25)
+
+Decision: **authenticated TLS first** (§7 preferred minimum), no signing secret.
+Probes run on the TSP itself, over SSH, stock `System/bin/curl` (8.5.0/OpenSSL 1.1.1t):
+
+| Probe | Result |
+| --- | --- |
+| `curl -sI https://github.com` with **stock** `/etc/ssl` bundle | rc=60 "unable to get local issuer certificate" (bundle outdated, 129 roots) |
+| `curl -sI` github.com / raw.githubusercontent.com / api.github.com / screenscraper.fr with **fresh SD** CA store (120 roots) | HTTP 200, redirects to release-assets included |
+| self-signed / wrong-host / expired (badssl.com) | rejected: rc=60 / 51 / 60 — validation is real, not cosmetic |
+| busybox `wget` without `--no-check-certificate` | "TLS certificate validation not implemented" — never validates, hence curl everywhere |
+
+Shipped in this change:
+
+- `System/etc/ssl/ca-certificates.crt` — current Mozilla CA store (120 roots), read at runtime from the SD card, never the volatile rootfs.
+- `ota_fetch()` helper in `update_common.sh` (sourced), `common_functions.sh`, and `ota_bootstrap.sh` (pre-source copy): `curl --cacert`, **fail-closed** — missing bundle ⇒ loud download failure, no `-k` fallback.
+- All OTA endpoints (bootstrap fetch, hotfix check+download, release API, notification polls, screenscraper API) go through `ota_fetch`. wget eliminated on the channel: busybox wget cannot validate; GNU wget's spider replaced by `curl -sI`.
+- Legacy hotfix payloads (`_assets/hotfixes/CrossMix-OS_v1.*.sh`) intentionally untouched: they are historical one-shot installers, superseded by this one.
+- `curl | sh` pipeline is already split (`curl -o file` then `sh file`); with TLS authenticated, the remaining §4 hardening (signature) is future work if the threat model changes.
+
+Secrets: none. No GitHub secret is needed for this design; the trust anchor is the CA store shipped with the verified image/hotfix.
