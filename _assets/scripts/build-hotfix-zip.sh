@@ -40,6 +40,8 @@ System/usr/trimui/scripts/ota_update.sh
 System/usr/trimui/scripts/update_common.sh
 System/usr/trimui/scripts/update_notification.sh
 System/usr/trimui/scripts/update_ota_release.sh
+System/usr/trimui/scripts/common_functions.sh
+System/etc/ssl/ca-certificates.crt
 System/usr/trimui/scripts/favorites_guard.sh
 System/usr/trimui/scripts/ssh_start.sh
 System/starts/°customization.sh

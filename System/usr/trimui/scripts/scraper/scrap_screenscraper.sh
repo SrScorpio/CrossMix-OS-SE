@@ -58,7 +58,7 @@ search_on_screenscraper() {
 
     while true; do
         # TODO : managing multithread for users who have it.
-        api_result=$(curl -k -s "$url")
+        api_result=$(ota_fetch -s "$url")
         Head_api_result=$(echo "$api_result" | head -n 1)
 
         # Don't check art if max threads for leechers is used

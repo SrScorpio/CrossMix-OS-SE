@@ -43,6 +43,25 @@ UPDATE_VERSION=1.1.0
 export PATH="/mnt/SDCARD/System/bin:/mnt/SDCARD/System/usr/trimui/scripts:$PATH"
 export LD_LIBRARY_PATH="/mnt/SDCARD/System/lib:/usr/trimui/lib:$LD_LIBRARY_PATH"
 
+# --- TLS (issue #30) ---
+# Every OTA download authenticates against the Mozilla CA store shipped on the
+# SD card (System/etc/ssl/ca-certificates.crt). Verified on hardware 2026-10-25:
+# github.com, raw.githubusercontent.com, api.github.com and screenscraper.fr
+# validate (HTTP 200 through redirects); self-signed/wrong-host/expired certs
+# are rejected (curl 60/51/60). The stock /etc/ssl bundle is outdated and fails
+# with "unable to get local issuer certificate" - that is why the channel used
+# -k/--no-check-certificate until now. busybox wget never validates TLS
+# ("not implemented"), so downloads go through curl.
+# Fail-closed: a missing bundle fails loudly. No silent fallback to -k.
+OTA_CA_BUNDLE="/mnt/SDCARD/System/etc/ssl/ca-certificates.crt"
+ota_fetch() {
+    if [ ! -f "$OTA_CA_BUNDLE" ]; then
+        echo "TLS: CA bundle missing ($OTA_CA_BUNDLE); refusing unauthenticated download" >&2
+        return 60
+    fi
+    curl --cacert "$OTA_CA_BUNDLE" "$@"
+}
+
 if [ "$1" = "-v" ]; then
     echo -n $UPDATE_VERSION
     exit
@@ -330,13 +349,12 @@ download_file() {
     # Temporary file name
     local temp_file="${destination_file}_tmp"
 
-    # Download the file
     echo -e "\n${BLUE}==== Downloading: $display_name ====${NC}"
-    # Timeouts, always. A stalled connection used to keep this process alive with
-    # no output for minutes; the UI that launched the update waits on it, so the
-    # menu froze with the icons on screen and never came back. -T is the socket
-    # timeout and -t the retry count, both understood by GNU wget and busybox.
-    wget --no-check-certificate --quiet --show-progress -T "${OTA_WGET_TIMEOUT:-30}" -t 2 -O "$temp_file" "$url"
+    # Download the file. curl with the SD CA store: busybox wget never
+    # validates TLS, and this channel must be authenticated (issue #30).
+    # --speed-time/--speed-limit replace wget -T: abort when under 1 KB/s for
+    # that long, so a stalled connection can not freeze the menu again.
+    ota_fetch -# --connect-timeout "${OTA_CURL_CONNECT_TIMEOUT:-15}" --speed-time "${OTA_WGET_TIMEOUT:-30}" --speed-limit 1024 -o "$temp_file" "$url"
     if [ $? -eq 0 ] && [ -f "$temp_file" ]; then
         mv "$temp_file" "$destination_file"
         sync

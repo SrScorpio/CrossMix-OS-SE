@@ -2,6 +2,18 @@
 export PATH="/mnt/SDCARD/System/bin:/mnt/SDCARD/System/usr/trimui/scripts:$PATH"
 export LD_LIBRARY_PATH="/mnt/SDCARD/System/lib:/usr/trimui/lib:$LD_LIBRARY_PATH"
 
+# TLS (issue #30): downloads authenticate against the SD Mozilla CA store.
+# Fail-closed: missing bundle fails loudly, no silent -k fallback. busybox wget
+# never validates TLS, so network fetches go through curl.
+OTA_CA_BUNDLE="/mnt/SDCARD/System/etc/ssl/ca-certificates.crt"
+ota_fetch() {
+    if [ ! -f "$OTA_CA_BUNDLE" ]; then
+        echo "TLS: CA bundle missing ($OTA_CA_BUNDLE); refusing unauthenticated download" >&2
+        return 60
+    fi
+    curl --cacert "$OTA_CA_BUNDLE" "$@"
+}
+
 if ! pgrep "text_viewer" >/dev/null; then
     NC='\033[0m'   # No Color (Reset)
     NONE='\033[0m' # No Color (Reset)
@@ -232,7 +244,7 @@ download_file() {
 
     # Download the file
     echo -e "\n${BLUE}==== Downloading: $display_name ====${NC}"
-    wget --no-check-certificate --quiet --show-progress -O "$temp_file" "$url"
+    ota_fetch -# --connect-timeout 15 --speed-time 30 --speed-limit 1024 -o "$temp_file" "$url"
     if [ $? -eq 0 ] && [ -f "$temp_file" ]; then
         mv "$temp_file" "$destination_file"
         sync
