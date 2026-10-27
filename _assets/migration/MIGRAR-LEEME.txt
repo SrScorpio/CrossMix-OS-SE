@@ -1,0 +1,29 @@
+CrossMix-OS SE (Scorpio Edition) - Migration kit v1.4.0-ce.2 (rev 4)
+
+Para instalaciones YA existentes (upstream 1.2.1 / 1.3.0 / 1.3.9 / 1.3.9.1)
+que quieren pasar al canal SE/CE.
+
+1. Haz BACKUP de la SD antes (imagen completa en el PC). No lo omitas.
+2. Con la SD en el PC, descomprime ESTE zip sobre la RAIZ de la SD (acepta
+   reemplazar solo los ficheros incluidos; no borra nada mas).
+3. Incluye System/usr/trimui/crossmix-version.txt => 1.4.0-ce.2. ESTO ES
+   IMPORTANTE: fija la clave de version para que el canal hotfix NO ejecute
+   los hotfixes viejos de upstream (originales en legacy/ del repo).
+4. Incluye System/etc/ssl/ca-certificates.crt: desde la primera comprobacion
+   las descargas del actualizador van autenticadas por TLS (fail-closed,
+   sin excepciones -k).
+5. SD a la consola, arranca, y desde CrossMix: Check Update / OTA-update.
+   A partir de ahora consulta el fork SrScorpio/CrossMix-OS-SE.
+6. Los cambios futuros llegaran como HOTFIXES de pocos KB (no se descarga
+   la imagen completa). La imagen grande solo es para instalacion desde cero.
+
+Que cambia al pasar a SE (resumen):
+- Actualizador propio con TLS autenticado (fail-closed), version 1.4.0-ce.2.
+- Sin contrasenas fijas en el firmware: root bloqueado, SSH solo por clave
+  (se activa desde System Tools -> Network -> SSH Server).
+- PortMaster actualizado (2026.09.30) y PPSSPP 1.19.0 (entradas GL primero).
+- Fondos de informacion con arte SE.
+- Firmware v1.1.1 requerido (el wizard de Firmware Update te guiara).
+- Swap opcional (OFF por defecto).
+
+Detalle completo: docs/ del repo (FIRMWARE-UPDATE.md, ota-security-design.md).

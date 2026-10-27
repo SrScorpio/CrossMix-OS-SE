@@ -12,6 +12,8 @@ _Get the best from your TrimUI Smart Pro_
 > **CrossMix-OS SE** — Scorpio Edition, maintained fork by [SrScorpio](https://github.com/SrScorpio).
 > Based on [CrossMix-OS](https://github.com/cizia64/CrossMix-OS) by **cizia64** and contributors — all credit for the original work is theirs. Same license: GPL-3.0.
 > Visible branding, what it covers and what stays firmware-owned: [docs/BRANDING.md](docs/BRANDING.md).
+>
+> **SE at a glance:** authenticated OTA updates (TLS, fail-closed) · no fixed firmware passwords (root locked, SSH by key only, enabled from System Tools → Network → SSH Server) · PortMaster framework 2026.09.30 · PPSSPP 1.19.0 with GL-first entries · SE-branded info screens · optional swap (off by default). Requires firmware ≥ `v1.1.1 / 20251128` — see the [firmware runbook](docs/FIRMWARE-UPDATE.md).
 
 <div align="center">
   <a href="https://github.com/SrScorpio/CrossMix-OS-SE/releases/latest">
@@ -97,6 +99,52 @@ First take a look to CrossMix Wiki, below are the different sections:
 ![bar](https://github.com/user-attachments/assets/730a4dd6-5f33-4274-9959-b188f3013142)
 
 <p>&nbsp;</p>
+
+# CrossMix-OS SE — install, migrate, update
+
+## 🆕 Install from scratch (SE image)
+
+1. Download the latest SE image (`CrossMix-OS_v<version>.7z`) from **[Releases](https://github.com/SrScorpio/CrossMix-OS-SE/releases/latest)** and extract it at the **root** of a blank/expendable SD card (FAT32 or exFAT).
+2. Check the firmware first: System Tools → Information must report ≥ `v1.1.1 / 20251128`. If not, the in-OS **Firmware Update wizard** guides you — verified steps and evidence in [docs/FIRMWARE-UPDATE.md](docs/FIRMWARE-UPDATE.md).
+3. Boot. From then on, updates arrive **over the air** (next section) — the full image is only needed for a clean install.
+
+## 🔁 Migrate from upstream CrossMix (cizia64 1.2.1 / 1.3.0 / 1.3.9 / 1.3.9.1)
+
+No reflash needed. Use the **CE-Migration kit** from the latest release (`CE-Migration-<version>.zip`):
+
+1. **Back up your SD first** (full image on your PC). Do not skip this.
+2. With the SD in your PC, unzip the kit at the **root** of the SD card (accept replacing files; it only adds/overwrites the files it contains).
+3. The kit stamps the version key to the SE channel, installs the current updater chain and the **CA bundle** — so even your first update check is TLS-authenticated.
+4. SD back in the console, boot, then **Check Update / OTA-update**. From that point the console follows `SrScorpio/CrossMix-OS-SE`.
+5. Future changes arrive as KB-sized **hotfixes**; the big image is never re-downloaded.
+
+Step-by-step details (Spanish): `MIGRAR-LEEME.txt` inside the kit.
+
+## 📡 Update (OTA)
+
+- **Check Update** (or the OTA-update app) queries this repo. Versions are compared against `crossmix-version.txt` on the card.
+- Downloads are **TLS-authenticated, fail-closed**: the console validates every host against the Mozilla CA bundle shipped at `System/etc/ssl/ca-certificates.crt`. There is no insecure fallback — if validation cannot be done, the download is refused. Design and hardware evidence: [docs/ota-security-design.md](docs/ota-security-design.md).
+- Hotfix releases are small `.sh`+`.zip` pairs under `_assets/hotfixes/`; consoles still carrying an upstream version key get a **stub** that safely delegates to the current SE hotfix.
+
+## 📚 SE documentation index
+
+| Doc | What it covers |
+| --- | --- |
+| [docs/BRANDING.md](docs/BRANDING.md) | What the SE branding changes and what stays firmware-owned |
+| [docs/FIRMWARE-UPDATE.md](docs/FIRMWARE-UPDATE.md) | TrimUI firmware runbook (≥ v1.1.1), verified on hardware |
+| [docs/ota-security-design.md](docs/ota-security-design.md) | Why and how OTA downloads are TLS-authenticated, with hardware probes |
+| [docs/RELEASE-MANIFEST.md](docs/RELEASE-MANIFEST.md) | Audit manifests for published images and hotfixes |
+| [docs/QA-COVERAGE.md](docs/QA-COVERAGE.md) | What the QA harness checks on every PR |
+| [docs/emulators-matrix.md](docs/emulators-matrix.md) | Emulator/core inventory of the SE image |
+| [docs/SLIM-OPTIONS.md](docs/SLIM-OPTIONS.md) | Measured slimming options (space savings) |
+
+## 🛟 Support
+
+- **SE-specific problems** (updater, migration kit, branding): open an issue in **this repo**.
+- Everything that is shared base with upstream: the cizia64 wiki links above still apply, and bugs found there belong in [cizia64/CrossMix-OS issues](https://github.com/cizia64/CrossMix-OS/issues).
+
+&nbsp;<br/>&nbsp;<br/>
+
 
 # Some words from the author
 
